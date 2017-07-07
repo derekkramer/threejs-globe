@@ -6,14 +6,13 @@ const renderer = new THREE.WebGLRenderer({alpha: true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// add icosahedron
 const geometry = new THREE.SphereGeometry(24, 32, 32);
 // THREE.ImageUtils.crossOrigin = true;
 
 const textureLoader = new THREE.TextureLoader();
 textureLoader.crossOrigin = true;
 
-textureLoader.load('https://c1.staticflickr.com/3/2521/3884071286_edb50f8137_b.jpg', function(texture) {
+textureLoader.load('https://c1.staticflickr.com/3/2521/3884071286_edb50f8137_b.jpg', texture => {
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(1, 1);
 
@@ -24,35 +23,13 @@ textureLoader.load('https://c1.staticflickr.com/3/2521/3884071286_edb50f8137_b.j
     render();
 });
 
-camera.position.z = 100;
+camera.position.z = 200;
 
-// so many lights
-var light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(0, 1, 0);
-scene.add(light);
-
-var light = new THREE.DirectionalLight(0xffffff, 0.5);
-light.position.set(0, -1, 0);
-scene.add(light);
-
-var light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(1, 0, 0);
-scene.add(light);
-
-var light = new THREE.DirectionalLight(0xffffff, 0.5);
-light.position.set(0, 0, 1);
-scene.add(light);
-
-var light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(0, 0, -1);
-scene.add(light);
-
-var light = new THREE.DirectionalLight(0xffffff, 0.5);
-light.position.set(-1, 0, 0);
+const light = new THREE.AmbientLight(0x404040, 4);
 scene.add(light);
 
 var render = function() {
     requestAnimationFrame(render);
-    mesh.rotation.y += 0.001;
+    mesh.rotation.y += 0.005;
     renderer.render(scene, camera);
 };
