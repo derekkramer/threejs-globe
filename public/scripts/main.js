@@ -1,18 +1,43 @@
 // Initialize the scene, camera, and global variables
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 1000);
-let earthMesh,
+const MAX_POINTS = 1000;
+let drawCount,
+    earthMesh,
     starMesh,
-    rotating = 0.005;
+    path,
+    rotating = 0.001;
 
 // Initialize the renderer and append to the HTML
 const renderer = new THREE.WebGLRenderer({alpha: true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Create a new sphere
+// Set up camera orbital controls, auto rotation, and zoom bounds
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.minDistance = 30;
+controls.maxDistance = 500;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 3.0;
+
+// Create new eath and star field spheres
 const earthGeo = new THREE.SphereGeometry(24, 32, 32);
 const starGeo = new THREE.SphereGeometry(500, 32, 32);
+
+// Create test launch representation and set the position
+// const launchTestGeo = new THREE.SphereGeometry(5, 32, 32);
+// const launchTestMat = new THREE.MeshBasicMaterial({color: 0x00FF00});
+
+// Create launch path geometry
+let pathGeo = new THREE.BufferGeometry();
+
+// Set the launch path attributes
+let positions = new Float32Array(MAX_POINTS * 3); // 3 vertices per point
+pathGeo.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+// Start the draw range for the launch path
+drawCount = 2;
+pathGeo.setDrawRange(0, drawCount);
 
 // Initialize the texture loader
 const loader = new THREE.TextureLoader();
@@ -23,28 +48,26 @@ const earthBump = loader.load('./img/earthbump1k.jpg');
 const earthSpec = loader.load('./img/earthspec1k.jpg');
 const starfield = loader.load('./img/starfield.jpg');
 
-const earthMat = new THREE.MeshPhongMaterial(
-    {
-        map: earthMap,
-        bumpMap: earthBump,
-        bumpScale: 0.5,
-        specularMap: earthSpec,
-        specular: 0x222222
-    }
-);
+const earthMat = new THREE.MeshPhongMaterial({map: earthMap, bumpMap: earthBump, bumpScale: 0.5, specularMap: earthSpec, specular: 0x222222});
 
-const starMat = new THREE.MeshBasicMaterial(
-    {
-        map: starfield,
-        side: THREE.BackSide
-    }
-);
+const starMat = new THREE.MeshBasicMaterial({map: starfield, side: THREE.BackSide});
 
+// Set the launch path material
+const pathMat = new THREE.LineBasicMaterial({color: 0xff0000, linewidth: 10});
+
+// Create the starfield mesh
 starMesh = new THREE.Mesh(starGeo, starMat);
-// scene.add(starMesh);
+
+// Create the launch path mesh
+path = new THREE.Line(pathGeo, pathMat);
+
+// const launchTest = new THREE.Mesh(launchTestGeo, launchTestMat);
+// launchTest.position.set(29, 0, 0);
 
 earthMesh = new THREE.Mesh(earthGeo, earthMat);
 earthMesh.add(starMesh);
+earthMesh.add(path);
+// earthMesh.add(launchTest);
 scene.add(earthMesh);
 
 // Position the camera back
@@ -57,61 +80,166 @@ scene.add(ambientLight);
 const directionalLight = new THREE.DirectionalLight(0x404040, 4);
 directionalLight.position.set(3, 3, 3);
 directionalLight.target.position.set(0, 0, 0);
-// scene.add(directionalLight);
-earthMesh.add(directionalLight);
+scene.add(directionalLight);
 
 scene.add(earthMesh);
+
+// Set the coordinates of the launch path
+setPositions();
+
+// Set the origin of the launch path
+path.rotation.x -= 1.05;
+path.rotation.y -= 1.4;
+path.rotation.z -= 0.58;
 
 // Start the rendering loop
 render();
 
 // Initialize interactive variables
-let isDragging = false;
-let previousPos = {
-    x: 0,
-    y: 0
-};
+// let isDragging = false;
+// let previousPos = {
+//     x: 0,
+//     y: 0
+// };
+//
+// // If the mouse is clicked, alter the rotation of the earth
+// $(renderer.domElement)
+// .on('mousedown', () => {
+//     isDragging = true;
+//     rotating = 0;
+//     previousPos = {
+//         x: 0,
+//         y: 0
+//     };
+// })
+// .on('mousemove', (event) => {
+//     if(isDragging){
+//         if(!previousPos.x && !previousPos.y){
+//             setPrevious();
+//         }else{
+//             let changeX = event.pageX - previousPos.x,
+//                 changeY = event.pageY - previousPos.y;
+//
+//             setPrevious();
+//
+//             earthMesh.rotation.x += changeY * 0.005;
+//             earthMesh.rotation.y += changeX * 0.005;
+//         }
+//     }
+// });
+//
+// // If released, reset the interactive variables
+// $(document).on('mouseup', () => {
+//     isDragging = false;
+//     rotating = 0.005;
+// });
+//
+// // On scroll, zoom in or out on the globe
+// $(renderer.domElement).on('mousewheel', (event) => {
+//     if(event.originalEvent.deltaY < 0){
+//         camera.position.z += event.originalEvent.deltaY;
+//         camera.position.z = Math.max(camera.position.z, 50);
+//     }else if(event.originalEvent.deltaY){
+//         camera.position.z += event.originalEvent.deltaY;
+//         camera.position.z = Math.min(camera.position.z, 500);
+//     }
+// });
 
-// If the mouse is clicked, alter the rotation of the earth
-$(renderer.domElement).on('mousedown', () => {
-    isDragging = true;
-    rotating = 0;
-    previousPos = {
-        x: 0,
-        y: 0
-    };
-})
-.on('mousemove', (event) => {
-    if(isDragging){
-        if(!previousPos.x && !previousPos.y){
-            setPrevious();
-        }else{
-            let changeX = event.pageX - previousPos.x,
-                changeY = event.pageY - previousPos.y;
-
-            setPrevious();
-
-            earthMesh.rotation.x += changeY * 0.005;
-            earthMesh.rotation.y += changeX * 0.005;
-        }
-    }
-});
-
-// If released, reset the interactive variables
-$(document).on('mouseup', () => {
-    isDragging = false;
-    rotating = 0.005;
-});
+// Reset the render area on window resize
+$(window).on('resize', onWindowResize);
 
 // The render loop
-function render(){
+function render() {
     requestAnimationFrame(render);
+
+    // Rotate the earth incrementally
     earthMesh.rotation.y += rotating;
+
+    // Update the orbital controls
+    controls.update();
+
+    if(drawCount < MAX_POINTS){
+        drawCount++;
+    }
+
+    // Increment the draw count of the launch path
+    // drawCount = (drawCount + 1) % MAX_POINTS;
+
+    // Update the draw range with the incremeneted draw count
+    path.geometry.setDrawRange(0, drawCount);
+
+    // If MAX_POINTS has been reached...
+    // if (drawCount === 0) {
+    //
+    //     // Reset the path coordinates
+    //     setPositions();
+    //
+    //     // Request an update for the launch path
+    //     path.geometry.attributes.position.needsUpdate = true; // required after the first render
+    //
+    //     // Set the launch path to a random color
+    //     path.material.color.setHSL(Math.random(), 1, 0.5);
+    //
+    // }
+
     renderer.render(scene, camera);
 }
 
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
 // Setting the previous mouse coordinates to the current coordiantes
-function setPrevious(){
-    previousPos.x = event.pageX;
-    previousPos.y = event.pageY;
+// function setPrevious() {
+//     previousPos.x = event.pageX;
+//     previousPos.y = event.pageY;
+// }
+
+// Set the position coordinates of the launch path
+function setPositions() {
+
+    let pos = path.geometry.attributes.position.array,
+        step = (2 * Math.PI) / (MAX_POINTS / 2),
+        r = 30,
+        index = 0,
+        x,
+        y,
+        z,
+        takeoff = MAX_POINTS / 10;
+        // orbitJump = MAX_POINTS / 2;
+        // orbitLand = orbitJump * 1.2;
+
+    for (let theta = 0; theta < 2 * Math.PI; theta += step) {
+
+        let newTheta = Math.abs(2 * Math.PI - theta),
+            modifier = 1;
+
+        if (theta < takeoff * step) {
+            modifier = (Math.sqrt(theta) / Math.sqrt(takeoff * step)) * 0.2 + 0.8;
+        }
+
+        x = r * Math.cos(newTheta) * modifier;
+        y = 0;
+        z = r * Math.sin(newTheta) * modifier;
+
+        pos[index++] = x;
+        pos[index++] = y;
+        pos[index++] = z;
+    }
+
+    for (let theta = 0; theta < 2 * Math.PI; theta += step) {
+
+        let newTheta = Math.abs(2 * Math.PI - theta),
+            modifier = 1;
+
+        x = r * Math.cos(newTheta) * modifier;
+        y = 0;
+        z = r * Math.sin(newTheta) * modifier;
+
+        pos[index++] = x;
+        pos[index++] = y;
+        pos[index++] = z;
+    }
 }
