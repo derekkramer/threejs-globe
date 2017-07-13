@@ -81,7 +81,7 @@ scene.add(directionalLight);
 scene.add(earthMesh);
 
 // Set the coordinates of the launch path
-setPositions('leo');
+setPositions('heo');
 
 setDirection('vandenberg', 2);
 

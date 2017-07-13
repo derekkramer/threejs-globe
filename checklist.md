@@ -3,7 +3,8 @@
 ### Launch Viewer
 
 [~] Finish plotting orbits  
-[ ] Write elliptical orbit paths  
+[x] Write elliptical orbit paths  
+[ ] Add refresh code for each new launch  
 [ ] Write the state manager  
 [ ] Port Launch Viewer into React
 
