@@ -3,15 +3,14 @@ const scene = new THREE.Scene(),
     camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 1000),
     MAX_POINTS = 1000;
 
-// Initialize global variables
+// Initialize the rest of the global variables
 let drawCount,
     earthMesh,
     starMesh,
     path,
-    rotating = true,
+    rotating = false,
     rotatingStep = 0.001,
-    loc = '',
-    cameraStep = 500;
+    loc = '';
 
 // Initialize the renderer and append to the HTML
 const renderer = new THREE.WebGLRenderer({alpha: true});
@@ -82,14 +81,11 @@ scene.add(directionalLight);
 scene.add(earthMesh);
 
 // Set the coordinates of the launch path
-setPositions();
+setPositions('leo');
 
-// Set the origin of the launch path
-path.rotation.x -= 1.05;
-path.rotation.y -= 1.4;
-path.rotation.z -= 0.58;
+setDirection('vandenberg', 2);
 
-setTimeout(() => loc = 'florida', 5000);
+// setTimeout(() => loc = 'florida', 5000);
 
 // Start the rendering loop
 render();
@@ -125,49 +121,4 @@ function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
-}
-
-// Set the position coordinates of the launch path
-function setPositions() {
-
-    let pos = path.geometry.attributes.position.array,
-        step = (2 * Math.PI) / (MAX_POINTS / 2),
-        r = 30,
-        index = 0,
-        x,
-        y,
-        z,
-        takeoff = MAX_POINTS / 10;
-
-    for (let theta = 0; theta < 2 * Math.PI; theta += step) {
-
-        let newTheta = Math.abs(2 * Math.PI - theta),
-            modifier = 1;
-
-        if (theta < takeoff * step) {
-            modifier = (Math.sqrt(theta) / Math.sqrt(takeoff * step)) * 0.2 + 0.8;
-        }
-
-        x = r * Math.cos(newTheta) * modifier;
-        y = 0;
-        z = r * Math.sin(newTheta) * modifier;
-
-        pos[index++] = x;
-        pos[index++] = y;
-        pos[index++] = z;
-    }
-
-    for (let theta = 0; theta < 2 * Math.PI; theta += step) {
-
-        let newTheta = Math.abs(2 * Math.PI - theta),
-            modifier = 1;
-
-        x = r * Math.cos(newTheta) * modifier;
-        y = 0;
-        z = r * Math.sin(newTheta) * modifier;
-
-        pos[index++] = x;
-        pos[index++] = y;
-        pos[index++] = z;
-    }
 }

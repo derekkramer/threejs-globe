@@ -1,3 +1,5 @@
+let cameraStep = 500;
+
 function checkZoom(zoomLoc){
     if(zoomLoc === 'florida'){
         rotating = false;
