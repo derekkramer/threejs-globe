@@ -1,12 +1,17 @@
 // Initialize the scene, camera, and global variables
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 1000);
-const MAX_POINTS = 1000;
+const scene = new THREE.Scene(),
+    camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 1000),
+    MAX_POINTS = 1000;
+
+// Initialize global variables
 let drawCount,
     earthMesh,
     starMesh,
     path,
-    rotating = 0.001;
+    rotating = true,
+    rotatingStep = 0.001,
+    loc = '',
+    cameraStep = 500;
 
 // Initialize the renderer and append to the HTML
 const renderer = new THREE.WebGLRenderer({alpha: true});
@@ -17,16 +22,12 @@ document.body.appendChild(renderer.domElement);
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.minDistance = 30;
 controls.maxDistance = 500;
-controls.autoRotate = true;
+// controls.autoRotate = true;
 controls.autoRotateSpeed = 3.0;
 
 // Create new eath and star field spheres
 const earthGeo = new THREE.SphereGeometry(24, 32, 32);
 const starGeo = new THREE.SphereGeometry(500, 32, 32);
-
-// Create test launch representation and set the position
-// const launchTestGeo = new THREE.SphereGeometry(5, 32, 32);
-// const launchTestMat = new THREE.MeshBasicMaterial({color: 0x00FF00});
 
 // Create launch path geometry
 let pathGeo = new THREE.BufferGeometry();
@@ -61,13 +62,9 @@ starMesh = new THREE.Mesh(starGeo, starMat);
 // Create the launch path mesh
 path = new THREE.Line(pathGeo, pathMat);
 
-// const launchTest = new THREE.Mesh(launchTestGeo, launchTestMat);
-// launchTest.position.set(29, 0, 0);
-
 earthMesh = new THREE.Mesh(earthGeo, earthMat);
 earthMesh.add(starMesh);
 earthMesh.add(path);
-// earthMesh.add(launchTest);
 scene.add(earthMesh);
 
 // Position the camera back
@@ -92,58 +89,10 @@ path.rotation.x -= 1.05;
 path.rotation.y -= 1.4;
 path.rotation.z -= 0.58;
 
+setTimeout(() => loc = 'florida', 5000);
+
 // Start the rendering loop
 render();
-
-// Initialize interactive variables
-// let isDragging = false;
-// let previousPos = {
-//     x: 0,
-//     y: 0
-// };
-//
-// // If the mouse is clicked, alter the rotation of the earth
-// $(renderer.domElement)
-// .on('mousedown', () => {
-//     isDragging = true;
-//     rotating = 0;
-//     previousPos = {
-//         x: 0,
-//         y: 0
-//     };
-// })
-// .on('mousemove', (event) => {
-//     if(isDragging){
-//         if(!previousPos.x && !previousPos.y){
-//             setPrevious();
-//         }else{
-//             let changeX = event.pageX - previousPos.x,
-//                 changeY = event.pageY - previousPos.y;
-//
-//             setPrevious();
-//
-//             earthMesh.rotation.x += changeY * 0.005;
-//             earthMesh.rotation.y += changeX * 0.005;
-//         }
-//     }
-// });
-//
-// // If released, reset the interactive variables
-// $(document).on('mouseup', () => {
-//     isDragging = false;
-//     rotating = 0.005;
-// });
-//
-// // On scroll, zoom in or out on the globe
-// $(renderer.domElement).on('mousewheel', (event) => {
-//     if(event.originalEvent.deltaY < 0){
-//         camera.position.z += event.originalEvent.deltaY;
-//         camera.position.z = Math.max(camera.position.z, 50);
-//     }else if(event.originalEvent.deltaY){
-//         camera.position.z += event.originalEvent.deltaY;
-//         camera.position.z = Math.min(camera.position.z, 500);
-//     }
-// });
 
 // Reset the render area on window resize
 $(window).on('resize', onWindowResize);
@@ -153,34 +102,21 @@ function render() {
     requestAnimationFrame(render);
 
     // Rotate the earth incrementally
-    earthMesh.rotation.y += rotating;
+    if(rotating){
+        earthMesh.rotation.y += rotatingStep;
+    }
 
     // Update the orbital controls
     controls.update();
+
+    checkZoom(loc);
 
     if(drawCount < MAX_POINTS){
         drawCount++;
     }
 
-    // Increment the draw count of the launch path
-    // drawCount = (drawCount + 1) % MAX_POINTS;
-
     // Update the draw range with the incremeneted draw count
     path.geometry.setDrawRange(0, drawCount);
-
-    // If MAX_POINTS has been reached...
-    // if (drawCount === 0) {
-    //
-    //     // Reset the path coordinates
-    //     setPositions();
-    //
-    //     // Request an update for the launch path
-    //     path.geometry.attributes.position.needsUpdate = true; // required after the first render
-    //
-    //     // Set the launch path to a random color
-    //     path.material.color.setHSL(Math.random(), 1, 0.5);
-    //
-    // }
 
     renderer.render(scene, camera);
 }
@@ -190,12 +126,6 @@ function onWindowResize() {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
-
-// Setting the previous mouse coordinates to the current coordiantes
-// function setPrevious() {
-//     previousPos.x = event.pageX;
-//     previousPos.y = event.pageY;
-// }
 
 // Set the position coordinates of the launch path
 function setPositions() {
@@ -208,8 +138,6 @@ function setPositions() {
         y,
         z,
         takeoff = MAX_POINTS / 10;
-        // orbitJump = MAX_POINTS / 2;
-        // orbitLand = orbitJump * 1.2;
 
     for (let theta = 0; theta < 2 * Math.PI; theta += step) {
 
