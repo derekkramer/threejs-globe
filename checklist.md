@@ -37,3 +37,6 @@
 ### Miscellaneous
 
 [ ] Write README.md  
+[x] Finish presentation
+[x] Finish mockup
+[x] Finish InVision
