@@ -28,7 +28,7 @@ controls.autoRotateSpeed = 3.0;
 const earthGeo = new THREE.SphereGeometry(24, 32, 32),
     starGeo = new THREE.SphereGeometry(500, 32, 32),
     pathGeo = new THREE.BufferGeometry(),
-    shipGeo = new THREE.SphereGeometry( 0.3, 7, 8 );
+    shipGeo = new THREE.SphereGeometry(0.3, 15, 15);
 
 // Initialize the texture loader
 const loader = new THREE.TextureLoader();
@@ -90,7 +90,7 @@ setTimeout(() => {
         'orbit': 'meo',
         'new': true
     };
-}, 10000);
+}, 20000);
 
 // Start the rendering loop
 render();

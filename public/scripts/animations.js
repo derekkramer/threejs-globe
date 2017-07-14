@@ -1,3 +1,4 @@
+// Initialize immutable global variables
 const zoom = {
     'florida': {
         'x': 4,
@@ -19,10 +20,11 @@ const zoom = {
     }
 };
 
+// Initialize mutable global variables
 let selection = {},
     zoomStep = 300,
-    // pathStep = 50,
     outStep = 400,
+    plotStart = false,
     zoomStart = false,
     pathStart = false,
     outStart = false,
@@ -40,36 +42,60 @@ let selection = {},
 
 function checkState(){
     if(selection['new']){
+        // Reset state variables and start animation pipeline
         resetState();
-        zoomStart = true;
+        plotStart = true;
         selection['new'] = false;
     }
 
+    if(plotStart){
+        // Plot the launch path coordinates and place the ship at the launch origin
+        plotPath();
+        plotShip();
+
+        // Move down the pipeline
+        plotStart = false;
+        zoomStart = true;
+    }
+
     if(zoomStart){
-        checkZoom();
+        zoomIn();
 
         zoomStep--;
 
         if(zoomStep === 0){
             zoomStart = false;
-            pathStart = true;
             zoomStep = 300;
+
+            pathStart = true;
+            outStart = true;
+
+            controls.autoRotate = true;
+            controls.enabled = true;
         }
     }
 
     if(pathStart){
-        checkPath();
+        // Stop drawing if all points are displayed
+        if(path.geometry.getAttribute('position') && drawCount < MAX_POINTS){
+            drawCount++;
+            updateShip();
+        }
+
+        // Reset the ship rotation and position once finished
+        if(path.geometry.getAttribute('position') && drawCount === MAX_POINTS){
+            resetShip();
+        }
     }
 
     if(outStart){
-        checkOut();
+        zoomOut();
 
         outStep--;
 
         if(outStep === 0){
             outStart = false;
             outStep = 400;
-            selection = {};
         }
     }
 
@@ -78,27 +104,33 @@ function checkState(){
         earthMesh.rotation.y += rotatingStep;
     }
 
-    // Stop drawing if all points are displayed
-    if(path.geometry.getAttribute('position') && drawCount < MAX_POINTS){
-        drawCount++;
-        updateShip();
-    }
-
-    // Reset the ship rotation and position once finished
-    if(path.geometry.getAttribute('position') && drawCount === MAX_POINTS){
-        resetShip();
-    }
-
     // Update the draw range with the incremeneted draw count
     path.geometry.setDrawRange(0, drawCount);
 }
 
-function checkZoom(){
-    if(zoomStep === 300){
-        controls.autoRotate = false;
-        rotating = false;
-        controls.enabled = false;
+function plotPath(){
+    // Stop rotation and camera controls during the plot and zoom in
+    controls.autoRotate = false;
+    rotating = false;
+    controls.enabled = false;
 
+    // Plot the launch path
+    setPath(
+        selection['origin'],
+        selection['trajectory'],
+        selection['orbit']
+    );
+
+    // camera.lookAt(new THREE.Vector3(
+    //     zoom[selection['origin']]['camera']['x'],
+    //     zoom[selection['origin']]['camera']['y'],
+    //     zoom[selection['origin']]['camera']['z']
+    // ));
+}
+
+function zoomIn(){
+    // Set the camera movement variables at the start of the zoom
+    if(zoomStep === 300){
         startX = camera.position.x;
         startY = camera.position.y;
         endX = zoom[selection['origin']]['x'];
@@ -108,18 +140,22 @@ function checkZoom(){
         stepZ = (30 - camera.position.z) / 200;
     }
 
+    // Tween direction from the globe to the launch origin in the first 100 frames
     if(zoomStep > 200){
-        lookX = (zoom[selection['origin']]['camera']['x'] / 100) * Math.abs(300 - zoomStep);
-        lookY = (zoom[selection['origin']]['camera']['y'] / 100) * Math.abs(300 - zoomStep);
-        lookZ = (zoom[selection['origin']]['camera']['z'] / 100) * Math.abs(300 - zoomStep);
+        let zoomIn = zoom[selection['origin']]['camera']
+        lookX = (zoomIn['x'] / 100) * Math.abs(300 - zoomStep);
+        lookY = (zoomIn['y'] / 100) * Math.abs(300 - zoomStep);
+        lookZ = (zoomIn['z'] / 100) * Math.abs(300 - zoomStep);
     }
 
+    // Camera direction at globe or launch origin
     camera.lookAt(new THREE.Vector3(
         lookX,
         lookY,
         lookZ
     ));
 
+    // Move the camera position one step
     camera.position.x += stepX;
     camera.position.y += stepY;
 
@@ -129,52 +165,49 @@ function checkZoom(){
     }
 }
 
-function checkPath(){
-    setPath(
-        selection['origin'],
-        selection['trajectory'],
-        selection['orbit']
-    );
-
-    camera.lookAt(new THREE.Vector3(
-        zoom[selection['origin']]['camera']['x'],
-        zoom[selection['origin']]['camera']['y'],
-        zoom[selection['origin']]['camera']['z']
-    ));
-
-    pathStart = false;
-    outStart = true;
-    pathStep = 50;
-    controls.autoRotate = true;
-    // rotating = true;
-    controls.enabled = true;
-}
-
-function checkOut(){
+function zoomOut(){
     stepZ = 170 / 400;
 
+    // Tween direction from the launch origin to the globe in the first 100 frames
     if(outStep > 300){
         let zoomOut = zoom[selection['origin']]['camera'];
+        // let zoomOut = shipLight.position;
         lookX = zoomOut['x'] - (zoomOut['x'] / 100) * Math.abs(400 - outStep);
         lookY = zoomOut['y'] - (zoomOut['y'] / 100) * Math.abs(400 - outStep);
         lookZ = zoomOut['z'] - (zoomOut['z'] / 100) * Math.abs(400 - outStep);
     }
 
+    // Camera direction at globe or launch origin
     camera.lookAt(new THREE.Vector3(
         lookX,
         lookY,
         lookZ
     ));
 
+    // Zoom out one step
     camera.position.z += stepZ;
 }
 
-function updateShip(){
-    if(drawCount === 1){
-        let shipRotations = pathRotations[selection['origin']][selection['trajectory']]
-        shipContainer.rotation.set(-shipRotations['x'], -shipRotations['y'], -shipRotations['z']);
-    }
+function plotShip(){
+    // Rotate the ship plane to match the launch path plane
+    let shipRot = pathRotations[selection['origin']][selection['trajectory']]
+    shipContainer.rotation.set(
+        -shipRot['x'],
+        -shipRot['y'],
+        -shipRot['z']
+    );
 
+    // Set the ship's initial position to the launch origin
+    let positions = path.geometry.attributes.position.array
+    shipLight.position.set(
+        positions[0],
+        positions[1],
+        positions[2]
+    );
+}
+
+function updateShip(){
+    // Update the ship's position to the current launch path coordinate
     let positions = path.geometry.attributes.position.array
     shipLight.position.set(
         positions[drawCount * 3 - 3],
@@ -184,11 +217,13 @@ function updateShip(){
 }
 
 function resetShip(){
+    // Reset the ships position to the scene origin
     shipContainer.rotation.set(0, 0, 0);
     shipLight.position.set(0, 0, 0);
 }
 
 function resetState(){
+    // Reset all state variables
     zoomStep = 300;
     outStep = 400;
     zoomStart = false;

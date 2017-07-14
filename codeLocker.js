@@ -44,3 +44,30 @@
 //
 //     pathStep--;
 // }
+
+
+// --------------------
+
+
+// Origin drawPath
+
+// function drawPath(){
+//     setPath(
+//         selection['origin'],
+//         selection['trajectory'],
+//         selection['orbit']
+//     );
+//
+//     camera.lookAt(new THREE.Vector3(
+//         zoom[selection['origin']]['camera']['x'],
+//         zoom[selection['origin']]['camera']['y'],
+//         zoom[selection['origin']]['camera']['z']
+//     ));
+//
+//     pathStart = false;
+//     outStart = true;
+//     pathStep = 50;
+//     controls.autoRotate = true;
+//     // rotating = true;
+//     controls.enabled = true;
+// }
