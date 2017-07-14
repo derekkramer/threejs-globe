@@ -5,8 +5,8 @@
 [x] Finish plotting orbits  
 [x] Write elliptical orbit paths  
 [x] Add refresh code for each new launch  
-[ ] Finish zoom in feature  
-[ ] Finish zoom out feature  
+[~] Finish zoom in feature  
+[~] Finish zoom out feature  
 [ ] Write the state manager  
 [ ] Port Launch Viewer into React
 

@@ -20,3 +20,27 @@
 // setTimeout(() => {setPath('vandenberg', 0, 'leo')}, 15000);
 // setTimeout(() => {setPath('vandenberg', 1, 'leo')}, 20000);
 // setTimeout(() => {setPath('vandenberg', 2, 'leo')}, 25000);
+
+
+// --------------------
+
+
+// Original checkPath
+
+// function checkPath(){
+//     if(pathStep === 50){
+//         setPath(
+//             selection['origin'],
+//             selection['trajectory'],
+//             selection['orbit']
+//         );
+//     }
+//
+//     camera.lookAt(new THREE.Vector3(
+//         zoom[selection['origin']]['camera']['x'],
+//         zoom[selection['origin']]['camera']['y'],
+//         zoom[selection['origin']]['camera']['z']
+//     ));
+//
+//     pathStep--;
+// }

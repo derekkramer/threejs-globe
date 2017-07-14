@@ -263,7 +263,5 @@ function setPath(origin, trajectory, orbit){
 
 function resetPath(){
     drawCount = 0;
-    path.rotation.x = 0;
-    path.rotation.y = 0;
-    path.rotation.z = 0;
+    path.rotation.set(0, 0, 0);
 }

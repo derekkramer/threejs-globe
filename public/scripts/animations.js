@@ -33,10 +33,14 @@ let selection = {},
     endY,
     stepX,
     stepY,
-    stepZ;
+    stepZ,
+    lookX,
+    lookY,
+    lookZ;
 
 function checkState(){
     if(selection['new']){
+        resetState();
         zoomStart = true;
         selection['new'] = false;
     }
@@ -55,17 +59,6 @@ function checkState(){
 
     if(pathStart){
         checkPath();
-
-        // pathStep--;
-        //
-        // if(pathStep === 0){
-        //     pathStart = false;
-        //     outStart = true;
-        //     pathStep = 50;
-        //     controls.autoRotate = true;
-        //     // rotating = true;
-        //     controls.enabled = true;
-        // }
     }
 
     if(outStart){
@@ -83,12 +76,17 @@ function checkState(){
     // Rotate the earth incrementally
     if(rotating){
         earthMesh.rotation.y += rotatingStep;
-        console.log(earthMesh.rotation.y);
     }
 
     // Stop drawing if all points are displayed
-    if(drawCount < MAX_POINTS){
+    if(path.geometry.getAttribute('position') && drawCount < MAX_POINTS){
         drawCount++;
+        updateShip();
+    }
+
+    // Reset the ship rotation and position once finished
+    if(path.geometry.getAttribute('position') && drawCount === MAX_POINTS){
+        resetShip();
     }
 
     // Update the draw range with the incremeneted draw count
@@ -110,10 +108,16 @@ function checkZoom(){
         stepZ = (30 - camera.position.z) / 200;
     }
 
+    if(zoomStep > 200){
+        lookX = (zoom[selection['origin']]['camera']['x'] / 100) * Math.abs(300 - zoomStep);
+        lookY = (zoom[selection['origin']]['camera']['y'] / 100) * Math.abs(300 - zoomStep);
+        lookZ = (zoom[selection['origin']]['camera']['z'] / 100) * Math.abs(300 - zoomStep);
+    }
+
     camera.lookAt(new THREE.Vector3(
-        zoom[selection['origin']]['camera']['x'],
-        zoom[selection['origin']]['camera']['y'],
-        zoom[selection['origin']]['camera']['z']
+        lookX,
+        lookY,
+        lookZ
     ));
 
     camera.position.x += stepX;
@@ -124,24 +128,6 @@ function checkZoom(){
         camera.position.z += stepZ;
     }
 }
-
-// function checkPath(){
-//     if(pathStep === 50){
-//         setPath(
-//             selection['origin'],
-//             selection['trajectory'],
-//             selection['orbit']
-//         );
-//     }
-//
-//     camera.lookAt(new THREE.Vector3(
-//         zoom[selection['origin']]['camera']['x'],
-//         zoom[selection['origin']]['camera']['y'],
-//         zoom[selection['origin']]['camera']['z']
-//     ));
-//
-//     pathStep--;
-// }
 
 function checkPath(){
     setPath(
@@ -167,11 +153,45 @@ function checkPath(){
 function checkOut(){
     stepZ = 170 / 400;
 
+    if(outStep > 300){
+        let zoomOut = zoom[selection['origin']]['camera'];
+        lookX = zoomOut['x'] - (zoomOut['x'] / 100) * Math.abs(400 - outStep);
+        lookY = zoomOut['y'] - (zoomOut['y'] / 100) * Math.abs(400 - outStep);
+        lookZ = zoomOut['z'] - (zoomOut['z'] / 100) * Math.abs(400 - outStep);
+    }
+
     camera.lookAt(new THREE.Vector3(
-        zoom[selection['origin']]['camera']['x'],
-        zoom[selection['origin']]['camera']['y'],
-        zoom[selection['origin']]['camera']['z']
+        lookX,
+        lookY,
+        lookZ
     ));
 
     camera.position.z += stepZ;
+}
+
+function updateShip(){
+    if(drawCount === 1){
+        let shipRotations = pathRotations[selection['origin']][selection['trajectory']]
+        shipContainer.rotation.set(-shipRotations['x'], -shipRotations['y'], -shipRotations['z']);
+    }
+
+    let positions = path.geometry.attributes.position.array
+    shipLight.position.set(
+        positions[drawCount * 3 - 3],
+        positions[drawCount * 3 - 2],
+        positions[drawCount * 3 - 1]
+    );
+}
+
+function resetShip(){
+    shipContainer.rotation.set(0, 0, 0);
+    shipLight.position.set(0, 0, 0);
+}
+
+function resetState(){
+    zoomStep = 300;
+    outStep = 400;
+    zoomStart = false;
+    pathStart = false;
+    outStart = false;
 }
