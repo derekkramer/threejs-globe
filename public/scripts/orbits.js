@@ -5,6 +5,16 @@ const pathRotations = {
             'x': 1.05,
             'y': 1.4,
             'z': 0.58
+        },
+        {
+            'x': 2.38,
+            'y': 2,
+            'z': 1.93
+        },
+        {
+            'x': 2.13,
+            'y': 2.6,
+            'z': 1.74
         }
     ],
     'vandenberg': [
@@ -26,17 +36,33 @@ const pathRotations = {
     ]
 }
 
+let MAX_POINTS,
+    positions,
+    pos,
+    step,
+    r = 30,
+    index,
+    x,
+    y,
+    z,
+    takeoff;
+
 // Set the position coordinates of the launch path
 function setPositions(orbit) {
     if(orbit === 'leo'){
-        let pos = path.geometry.attributes.position.array,
-            step = (2 * Math.PI) / (MAX_POINTS / 2),
-            r = 30,
-            index = 0,
-            x,
-            y,
-            z,
-            takeoff = MAX_POINTS / 10;
+        MAX_POINTS = 1000;
+        positions = new Float32Array(MAX_POINTS * 3);
+
+        if(path.geometry.getAttribute('position')){
+            path.geometry.removeAttribute('position');
+        }
+
+        path.geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+        pos = path.geometry.attributes.position.array;
+        step = (2 * Math.PI) / (MAX_POINTS / 2);
+        index = 0;
+        takeoff = MAX_POINTS / 10;
 
         for (let theta = 0; theta < 2 * Math.PI; theta += step) {
 
@@ -69,14 +95,19 @@ function setPositions(orbit) {
             pos[index++] = z;
         }
     }else if(orbit === 'meo'){
-        let pos = path.geometry.attributes.position.array,
-            step = (2 * Math.PI) / (MAX_POINTS / 4),
-            r = 30,
-            index = 0,
-            x,
-            y,
-            z,
-            takeoff = MAX_POINTS / 10;
+        MAX_POINTS = 2000;
+        positions = new Float32Array(MAX_POINTS * 3);
+
+        if(path.geometry.getAttribute('position')){
+            path.geometry.removeAttribute('position');
+        }
+
+        path.geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+        pos = path.geometry.attributes.position.array;
+        step = (2 * Math.PI) / (MAX_POINTS / 4);
+        index = 0;
+        takeoff = MAX_POINTS / 10;
 
         for (let theta = 0; theta < 2 * Math.PI; theta += step) {
 
@@ -140,14 +171,19 @@ function setPositions(orbit) {
             pos[index++] = z;
         }
     }else if(orbit === 'heo'){
-        let pos = path.geometry.attributes.position.array,
-            step = (2 * Math.PI) / (MAX_POINTS / 4),
-            r = 30,
-            index = 0,
-            x,
-            y,
-            z,
-            takeoff = MAX_POINTS / 10;
+        MAX_POINTS = 2000;
+        positions = new Float32Array(MAX_POINTS * 3);
+
+        if(path.geometry.getAttribute('position')){
+            path.geometry.removeAttribute('position');
+        }
+
+        path.geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+        pos = path.geometry.attributes.position.array;
+        step = (2 * Math.PI) / (MAX_POINTS / 4);
+        index = 0;
+        takeoff = MAX_POINTS / 10;
 
         for (let theta = 0; theta < 2 * Math.PI; theta += step) {
 
@@ -213,8 +249,21 @@ function setPositions(orbit) {
     }
 }
 
-function setDirection(orig, angle){
-    path.rotation.x -= pathRotations[orig][angle]['x'];
-    path.rotation.y -= pathRotations[orig][angle]['y'];
-    path.rotation.z -= pathRotations[orig][angle]['z'];
+function setDirection(origin, trajectory){
+    path.rotation.x -= pathRotations[origin][trajectory]['x'];
+    path.rotation.y -= pathRotations[origin][trajectory]['y'];
+    path.rotation.z -= pathRotations[origin][trajectory]['z'];
+}
+
+function setPath(origin, trajectory, orbit){
+    resetPath();
+    setPositions(orbit);
+    setDirection(origin, trajectory);
+}
+
+function resetPath(){
+    drawCount = 0;
+    path.rotation.x = 0;
+    path.rotation.y = 0;
+    path.rotation.z = 0;
 }

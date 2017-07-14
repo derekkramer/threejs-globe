@@ -2,9 +2,11 @@
 
 ### Launch Viewer
 
-[~] Finish plotting orbits  
+[x] Finish plotting orbits  
 [x] Write elliptical orbit paths  
-[ ] Add refresh code for each new launch  
+[x] Add refresh code for each new launch  
+[ ] Finish zoom in feature  
+[ ] Finish zoom out feature  
 [ ] Write the state manager  
 [ ] Port Launch Viewer into React
 

@@ -13,6 +13,8 @@
 //    Zoom - middle mouse, or mousewheel / touch: two finger spread or squish
 //    Pan - right mouse, or arrow keys / touch: three finger swipe
 
+let rotationTheta = 0;
+
 THREE.OrbitControls = function ( object, domElement ) {
 
 	this.object = object;
@@ -147,7 +149,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 				// rotateLeft( getAutoRotationAngle() );
 				rotateRight( getAutoRotationAngle() );
-
+				rotationTheta += getAutoRotationAngle();
 			}
 
 			spherical.theta += sphericalDelta.theta;
