@@ -42,7 +42,7 @@ const earthMap = loader.load('./img/earthmap1k.jpg'),
 // Create the materials
 const earthMat = new THREE.MeshPhongMaterial({map: earthMap, bumpMap: earthBump, bumpScale: 0.5, specularMap: earthSpec, specular: 0x222222}),
     starMat = new THREE.MeshBasicMaterial({map: starfield, side: THREE.BackSide}),
-    pathMat = new THREE.LineBasicMaterial({color: 0xFFFFFF, linewidth: 10}),
+    pathMat = new THREE.LineBasicMaterial({color: 0xFFFFFF, linewidth: 5}),
     shipMat = new THREE.MeshStandardMaterial({emissive: 0xffffee, emissiveIntensity: 1, color: 0x000000});
 
 // Create the meshes
@@ -58,7 +58,7 @@ scene.add(earthMesh);
 // Create lights
 const ambientLight = new THREE.AmbientLight(0x404040, 2),
     directionalLight = new THREE.DirectionalLight(0x404040, 4),
-    shipLight = new THREE.PointLight( 0xffee88, 5, 100, 2 );
+    shipLight = new THREE.PointLight(0xffee88, 5, 100, 2);
 
 directionalLight.position.set(3, 3, 3);
 directionalLight.target.position.set(0, 0, 0);

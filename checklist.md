@@ -5,14 +5,14 @@
 [x] Finish plotting orbits  
 [x] Write elliptical orbit paths  
 [x] Add refresh code for each new launch  
-[~] Finish zoom in feature  
-[~] Finish zoom out feature  
-[ ] Write the state manager  
+[x] Finish zoom in feature  
+[x] Finish zoom out feature  
+[x] Write the state manager  
 [ ] Port Launch Viewer into React
 
 ###### Stretch
 
-[ ] Add light flare animation on launch  
+[x] Add light flare animation on launch  
 [ ] Add reflectivity and thickness to launch line  
 [ ] Add atmospheric glow to the globe  
 [ ] Add high resolution tile mapping to globe  
