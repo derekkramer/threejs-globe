@@ -76,21 +76,23 @@ scene.add(ambientLight);
 scene.add(directionalLight);
 scene.add(shipContainer);
 
-selection = {
-    'origin': 'florida',
-    'trajectory': 0,
-    'orbit': 'meo',
-    'new': true
-};
-
 setTimeout(() => {
     selection = {
-        'origin': 'vandenberg',
-        'trajectory': 1,
+        'origin': 'florida',
+        'trajectory': 0,
         'orbit': 'meo',
         'new': true
-    };
-}, 20000);
+    }
+}, 5000);
+
+// setTimeout(() => {
+//     selection = {
+//         'origin': 'vandenberg',
+//         'trajectory': 1,
+//         'orbit': 'meo',
+//         'new': true
+//     };
+// }, 20000);
 
 // Start the rendering loop
 render();
